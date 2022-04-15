@@ -6,7 +6,7 @@
  */
 #include "timer.h"
 
-uint32_t intoff = 8; //Interrupt offset. Shifts to the left, multiplied by 100 in function
+uint32_t intoff = 8; //Intercept offset. Shifts to the left, multiplied by 100 in function
 int32_t scaleroff = 6; //Degree scaler offset, fixes 180 degree point
 
 void servo_init(void){
