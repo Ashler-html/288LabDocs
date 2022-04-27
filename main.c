@@ -33,6 +33,7 @@ int main(void){
     oi_t *sensor_data = oi_alloc();
     oi_init(sensor_data);
     Object objects[5];
+    int distanceMoved = 0;
     int xDistance = 0;
     int yDistance = 0;
     int direction = 90;
@@ -43,10 +44,11 @@ int main(void){
     while(1){
         if(command_byte == 'w'){
             //  oi_setWheels(300,300); //move forward at full speed
-            xDistance += move_forward(sensor_data, 100) * cos(direction * 3.1415926 / 180);
-            yDistance += move_forward(sensor_data, 100) * sin(direction * 3.1415926 / 180);
+            distanceMoved = move_forward(sensor_data, 50);
+            xDistance += distanceMoved * cos(direction * 3.1415926 / 180);
+            yDistance += distanceMoved * sin(direction * 3.1415926 / 180);
             char str[] = "";
-            sprintf(str, "\n\rTotal Distance Moved:\n\rX-direction: %d\n\rY-Direction: %d\n\r", xDistance, yDistance);
+            sprintf(str, "\n\rDistance Moved: %d\n\rTotal Distance Moved:\n\rX-direction: %d\n\rY-Direction: %d\n\r", distanceMoved, xDistance, yDistance);
             int printi = 0;
             for(printi = 0; printi < strlen(str);printi++){
                 uart_sendChar(str[printi]);
@@ -54,14 +56,15 @@ int main(void){
             done = true;
         }
         if(command_byte == 'a'){
-            direction += turn_left(sensor_data, 90);
+            direction += turn_left(sensor_data, 30);
             done = true;
         }
         if(command_byte == 'x'){
-            xDistance += move_back(sensor_data, 100) * cos(direction * 3.1415926 / 180);
-            yDistance += move_back(sensor_data, 100) * sin(direction * 3.1415926 / 180);
+            distanceMoved = move_back(sensor_data, 50);
+            xDistance +=  distanceMoved * cos(direction * 3.1415926 / 180);
+            yDistance += distanceMoved * sin(direction * 3.1415926 / 180);
             char str[] = "";
-            sprintf(str, "\n\rTotal Distance Moved:\n\rX-direction: %d\n\rY-Direction: %d\n\r", xDistance, yDistance);
+            sprintf(str, "\n\rDistance Moved: %d\n\rTotal Distance Moved:\n\rX-direction: %d\n\rY-Direction: %d\n\r", distanceMoved, xDistance, yDistance);
             int printi = 0;
             for(printi = 0; printi < strlen(str);printi++){
                 uart_sendChar(str[printi]);
@@ -69,7 +72,7 @@ int main(void){
             done = true;
         }
         if(command_byte == 'd'){
-            direction += turn_right(sensor_data, 90);
+            direction += turn_right(sensor_data, 30);
             done = true;
         }
         if(command_byte == 'm'){

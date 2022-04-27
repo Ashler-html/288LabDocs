@@ -244,11 +244,11 @@ double move_forward(oi_t *sensor_data, double distance_mm){
             return;
         }
 
-        oi_setWheels(200,200); //move forward at full speed
+        oi_setWheels(100,100); //move forward at full speed
         oi_update(sensor_data);
         hit = Collision(sensor_data);
         if(hit){
-            oi_setWheels(200, 200);
+            oi_setWheels(100, 100);
             hit = false;
         }
         sum += sensor_data -> distance; // use -> notation since pointer
@@ -260,7 +260,7 @@ double move_forward(oi_t *sensor_data, double distance_mm){
 double move_back(oi_t *sensor_data, double distance_mm){
     double sum = 0; // distance member in oi_t struct is type double
     while (sum >= -1 *distance_mm) {//?
-        oi_setWheels(-200,-200); //move forward at full speed
+        oi_setWheels(-100,-100); //move forward at full speed
         oi_update(sensor_data);
         sum += sensor_data -> distance; // use -> notation since pointer
         lcd_printf("%lf" , sum);
@@ -270,7 +270,7 @@ double move_back(oi_t *sensor_data, double distance_mm){
 }
 double turn_right(oi_t *sensor,double degrees){
     double sum = 0; // distance member in oi_t struct is type double
-    oi_setWheels(-100,100); //move forward at full speed
+    oi_setWheels(-50,50); //move forward at full speed
     while (sum > degrees * -.98) {
         oi_update(sensor);
         sum += sensor -> angle; // use -> notation since pointer
@@ -281,7 +281,7 @@ double turn_right(oi_t *sensor,double degrees){
 }
 double turn_left(oi_t *sensor, double degrees){
     double sum = 0; // distance member in oi_t struct is type double
-    oi_setWheels(100,-100); //move forward at full speed
+    oi_setWheels(50,-50); //move forward at full speed
     while (sum < degrees * .9) {
         oi_update(sensor);
         sum += sensor -> angle; // use -> notation since pointer
