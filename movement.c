@@ -18,10 +18,11 @@
 #include "cyBot_uart.h"
 #include "uart-interrupt.h"
 #include "Movement.h"
-#include "math.h"
 #include "adc.h"
 #include "ping_template.h"
 #include "servo.h"
+#include "sound.h"
+#include "cliff.h"
 
 extern volatile int command_flag;
 extern volatile char input;
@@ -232,10 +233,11 @@ double move_forward(oi_t *sensor_data, double distance_mm){
     double sum = 0; // distance member in oi_t struct is type double
     bool hit = false;
     while (sum < distance_mm && distance_mm > 0) {
-	// Cliff and tape detection
+    // Cliff and tape detection
         C = cliffDetect(sensor_data);
         t = tapeDetect(sensor_data);
         if(C != 'N' || t != 'N'){
+            playSoundCliff();
             move_back(sensor_data, 5);
             uart_sendChar(C);
             uart_sendChar(t);
@@ -291,6 +293,7 @@ double turn_left(oi_t *sensor, double degrees){
 
 bool Collision(oi_t *sensor){
     if(sensor->bumpLeft){
+        playSoundBump();
         move_back(sensor, 15);
         turn_right(sensor, 90);
         move_forward(sensor, 220);
@@ -386,6 +389,3 @@ void move_to(Object obstacles[], oi_t* sensor,int objects){
 
     }
 }
-
-
-

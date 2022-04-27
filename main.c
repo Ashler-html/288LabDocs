@@ -11,6 +11,8 @@
 #include "adc.h"
 #include "servo.h"
 #include "ping_template.h"
+#include "sound.h"
+#include "cliff.h"
 
 extern volatile int command_flag;
 
@@ -28,7 +30,6 @@ int main(void){
     ping_init();
     servo_init();
     servo_move(90);
-
     oi_t *sensor_data = oi_alloc();
     oi_init(sensor_data);
     Object objects[5];
@@ -36,9 +37,10 @@ int main(void){
     int yDistance = 0;
     int direction = 90;
     bool done = false;
-
+    loadSoundCliff();
+    loadSoundBump();
+    loadSoundFinish();
     while(1){
-
         if(command_byte == 'w'){
             //  oi_setWheels(300,300); //move forward at full speed
             xDistance += move_forward(sensor_data, 100) * cos(direction * 3.1415926 / 180);
@@ -74,6 +76,10 @@ int main(void){
             scan(0, 180,sensor_data, objects);
             done = true;
             //This scan should also move to smallest
+        }
+        if(command_byte == 'f'){
+            playSoundFinish();
+            done = true;
         }
 
         //        if(command_byte == '.'){
