@@ -227,9 +227,20 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
 
 
 double move_forward(oi_t *sensor_data, double distance_mm){
+    char C = cliffDetect(sensor_data);
+    char t = tapeDetect(sensor_data);
     double sum = 0; // distance member in oi_t struct is type double
     bool hit = false;
     while (sum < distance_mm && distance_mm > 0) {
+	// Cliff and tape detection
+        C = cliffDetect(sensor_data);
+        t = tapeDetect(sensor_data);
+        if(C != 'N' || t != 'N'){
+            move_back(sensor_data, 5);
+            uart_sendChar(C);
+            uart_sendChar(t);
+            return;
+        }
 
         oi_setWheels(200,200); //move forward at full speed
         oi_update(sensor_data);
