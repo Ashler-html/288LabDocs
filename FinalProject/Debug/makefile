@@ -13,12 +13,14 @@ ORDERED_OBJS += \
 "./Movement.obj" \
 "./Timer.obj" \
 "./adc.obj" \
+"./cliff.obj" \
 "./lcd.obj" \
 "./main.obj" \
 "./open_interface.obj" \
 "./ping_template.obj" \
 "./resetSimulation.obj" \
 "./servo.obj" \
+"./sound.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
 "./uart-interrupt.obj" \
 "../libcybotUART.lib" \
@@ -166,8 +168,8 @@ FinalProject.hex: $(EXE_OUTPUTS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "Movement.obj" "Timer.obj" "adc.obj" "lcd.obj" "main.obj" "open_interface.obj" "ping_template.obj" "resetSimulation.obj" "servo.obj" "tm4c123gh6pm_startup_ccs.obj" "uart-interrupt.obj" 
-	-$(RM) "Movement.d" "Timer.d" "adc.d" "lcd.d" "main.d" "open_interface.d" "ping_template.d" "resetSimulation.d" "servo.d" "tm4c123gh6pm_startup_ccs.d" "uart-interrupt.d" 
+	-$(RM) "Movement.obj" "Timer.obj" "adc.obj" "cliff.obj" "lcd.obj" "main.obj" "open_interface.obj" "ping_template.obj" "resetSimulation.obj" "servo.obj" "sound.obj" "tm4c123gh6pm_startup_ccs.obj" "uart-interrupt.obj" 
+	-$(RM) "Movement.d" "Timer.d" "adc.d" "cliff.d" "lcd.d" "main.d" "open_interface.d" "ping_template.d" "resetSimulation.d" "servo.d" "sound.d" "tm4c123gh6pm_startup_ccs.d" "uart-interrupt.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

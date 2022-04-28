@@ -24,13 +24,15 @@ main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/inc/tm4c123gh6pm.h
 main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdbool.h
 main.obj: C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h
 main.obj: ../lcd.h
-main.obj: ../cyBot_uart.h
-main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.h
 main.obj: ../uart-interrupt.h
 main.obj: ../Movement.h
+main.obj: ../cyBot_uart.h
+main.obj: C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.h
 main.obj: ../adc.h
 main.obj: ../servo.h
 main.obj: ../ping_template.h
+main.obj: ../sound.h
+main.obj: ../cliff.h
 
 ../main.c:
 
@@ -80,17 +82,21 @@ C:/ti/TivaWare_C_Series-2.1.4.178/driverlib/interrupt.h:
 
 ../lcd.h:
 
-../cyBot_uart.h:
-
-C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.h:
-
 ../uart-interrupt.h:
 
 ../Movement.h:
+
+../cyBot_uart.h:
+
+C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.h:
 
 ../adc.h:
 
 ../servo.h:
 
 ../ping_template.h:
+
+../sound.h:
+
+../cliff.h:
 

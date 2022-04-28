@@ -18,10 +18,11 @@
 #include "cyBot_uart.h"
 #include "uart-interrupt.h"
 #include "Movement.h"
-#include "math.h"
 #include "adc.h"
 #include "ping_template.h"
 #include "servo.h"
+#include "sound.h"
+#include "cliff.h"
 
 extern volatile int command_flag;
 extern volatile char input;
@@ -176,7 +177,7 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
                 for(printi = 0; printi < strlen(str);printi++){
                     uart_sendChar(str[printi]); //Print object Num to Putty
                 }
-                uart_sendChar('\t');
+                uart_sendChar(',');
 
 
                 end_a = angles[x]-2;
@@ -186,7 +187,7 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
                 for(printi = 0; printi < strlen(str);printi++){
                     uart_sendChar(str[printi]); //Print mid angle object in Putty
                 }
-                uart_sendChar('\t');
+                uart_sendChar(',');
                 //Calculate average
 
                 vals = (end_a - start_a) / 2;
@@ -196,15 +197,15 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
                 for(printi = 0; printi < strlen(str);printi++){
                     uart_sendChar(str[printi]); //Print dist to object in Putty
                 }
-                uart_sendChar('\t');
-                lin_width = ((end_a - start_a)* (3.14/180) * (min_dist)); //calculate lin width
+                uart_sendChar(',');
+                lin_width = ((end_a - start_a)* (3.14/180) * (min_dist*.75) + 2); //calculate lin width
 //                lin_width -=5; //offset to account for increased evaluation of distance
                 a[objects-1].width = lin_width;
                 sprintf(str, "%lf", lin_width);
                 for(printi = 0; printi < strlen(str);printi++){
                     uart_sendChar(str[printi]); //Print linear width to object in Putty
                 }
-                uart_sendChar('\t');
+                //uart_sendChar('\t');
 
                 at_obj = false;
                 objects++;
@@ -214,7 +215,48 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
             }
         }
     }
-    if(at_obj && (end_a != start_a)){ //End of scan
+    //End of scan
+    if(at_obj && (end_a != start_a)){
+        uart_sendChar('\r');
+        uart_sendChar('\n');
+        sprintf(str, "%d", objects);
+        for(printi = 0; printi < strlen(str);printi++){
+            uart_sendChar(str[printi]); //Print object Num to Putty
+        }
+        uart_sendChar(',');
+
+
+        end_a = angles[x]-2;
+        mid_angle = (end_a + start_a) / 2; //angle for object
+        a[objects-1].angle = mid_angle;
+        sprintf(str, "%d", mid_angle);
+        for(printi = 0; printi < strlen(str);printi++){
+            uart_sendChar(str[printi]); //Print mid angle object in Putty
+        }
+        uart_sendChar(',');
+        //Calculate average
+
+        vals = (end_a - start_a) / 2;
+        max_dist = CalculateAv(&sum, &vals); //AVERAGE DISTANCE IS STORED IN MAX_DIST
+        sprintf(str, "%lf", min_dist);
+        a[objects-1].distance = min_dist;
+        for(printi = 0; printi < strlen(str);printi++){
+            uart_sendChar(str[printi]); //Print dist to object in Putty
+        }
+        uart_sendChar(',');
+        lin_width = ((end_a - start_a)* (3.14/180) * (min_dist*.75) + 2); //calculate lin width
+        //                lin_width -=5; //offset to account for increased evaluation of distance
+        a[objects-1].width = lin_width;
+        sprintf(str, "%lf", lin_width);
+        for(printi = 0; printi < strlen(str);printi++){
+            uart_sendChar(str[printi]); //Print linear width to object in Putty
+        }
+        //uart_sendChar('\t');
+
+        at_obj = false;
+        objects++;
+    }
+    else{
         at_obj = false;
     }
 
@@ -227,84 +269,99 @@ void scan(int start, int end, oi_t *sensor, Object a[]){
 
 
 double move_forward(oi_t *sensor_data, double distance_mm){
+    char C = cliffDetect(sensor_data);
+    char t = tapeDetect(sensor_data);
     double sum = 0; // distance member in oi_t struct is type double
     bool hit = false;
     while (sum < distance_mm && distance_mm > 0) {
+    // Cliff and tape detection
+        C = cliffDetect(sensor_data);
+        t = tapeDetect(sensor_data);
+        if(C != 'N' || t != 'N'){
+            playSoundCliff();
+            move_back(sensor_data, 5);
+            uart_sendChar(C);
+            uart_sendChar(t);
+            return sum;
+        }
 
-        oi_setWheels(200,200); //move forward at full speed
+        oi_setWheels(100,100); //move forward at full speed
         oi_update(sensor_data);
         hit = Collision(sensor_data);
-        if(hit){
-            oi_setWheels(200, 200);
-            hit = false;
-        }
         sum += sensor_data -> distance; // use -> notation since pointer
+        if(hit){
+            oi_setWheels(0, 0);
+            hit = false;
+            sum = distance_mm + 1;
+        }
         lcd_printf("%lf" , sum);
     }
     oi_setWheels(0,0); //stop
-    return sensor_data -> distance;
+    return sum;
 }
 double move_back(oi_t *sensor_data, double distance_mm){
     double sum = 0; // distance member in oi_t struct is type double
     while (sum >= -1 *distance_mm) {//?
-        oi_setWheels(-500,-500); //move forward at full speed
+        oi_setWheels(-100,-100); //move forward at full speed
         oi_update(sensor_data);
         sum += sensor_data -> distance; // use -> notation since pointer
         lcd_printf("%lf" , sum);
     }
     oi_setWheels(0,0); //stop
-    return sensor_data -> distance;
+    return sum;
 }
-void turn_right(oi_t *sensor,double degrees){
+double turn_right(oi_t *sensor,double degrees){
     double sum = 0; // distance member in oi_t struct is type double
-    oi_setWheels(-100,100); //move forward at full speed
-    while (sum > degrees * -.98) {
+    oi_setWheels(-50,50); //move forward at full speed
+    while (sum > degrees * -.785) {
         oi_update(sensor);
         sum += sensor -> angle; // use -> notation since pointer
         lcd_printf("%lf" , sum);
     }
     oi_setWheels(0,0); //stop
+    char top[] = "Turning Right 30";
+    int printi;
+    for(printi = 0; printi < strlen(top);printi++){
+        uart_sendChar(top[printi]);
+    }
+    return sum;
 }
-void turn_left(oi_t *sensor, double degrees){
+double turn_left(oi_t *sensor, double degrees){
     double sum = 0; // distance member in oi_t struct is type double
-    oi_setWheels(100,-100); //move forward at full speed
-    while (sum < degrees * .9) {
+    oi_setWheels(50,-50); //move forward at full speed
+    while (sum < degrees * .77) {
         oi_update(sensor);
         sum += sensor -> angle; // use -> notation since pointer
         lcd_printf("%lf" , sum);
     }
     oi_setWheels(0,0); //stop
+    char top[] = "Turning Left 30";
+    int printi;
+    for(printi = 0; printi < strlen(top);printi++){
+        uart_sendChar(top[printi]);
+    }
+    return sum;
 }
 
 bool Collision(oi_t *sensor){
     if(sensor->bumpLeft){
-        move_back(sensor, 15);
-        turn_right(sensor, 90);
-        move_forward(sensor, 220);
-        turn_left(sensor, 90);
-        move_forward(sensor, 220);
-        turn_left(sensor, 15);
-        if(!secScan){
-            secScan = true;
-            scan(0, 180, sensor, outside);
-
+        playSoundBump();
+        move_back(sensor, 20);
+        char top[] = "Bump Left \r\n";
+        int printi;
+        for(printi = 0; printi < strlen(top);printi++){
+            uart_sendChar(top[printi]);
         }
-//        secScan = true;
         return true;
     }
     else if(sensor->bumpRight){
-        move_back(sensor, 15);
-        turn_left(sensor, 90);
-        move_forward(sensor, 220);
-        turn_right(sensor, 90);
-        move_forward(sensor,220);
-        turn_right(sensor, 15);
-        if(!secScan){
-        secScan = true;
-        scan(0, 180, sensor, outside);
-
+        playSoundBump();
+        char top[] = "Bump Right \r\n";
+        int printi;
+        for(printi = 0; printi < strlen(top);printi++){
+            uart_sendChar(top[printi]);
         }
-//        secScan = true;
+        move_back(sensor, 20);
         return true;
     }
     else{
@@ -373,6 +430,3 @@ void move_to(Object obstacles[], oi_t* sensor,int objects){
 
     }
 }
-
-
-

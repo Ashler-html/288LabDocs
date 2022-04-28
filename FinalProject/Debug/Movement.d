@@ -31,6 +31,8 @@ Movement.obj: ../Movement.h
 Movement.obj: ../adc.h
 Movement.obj: ../ping_template.h
 Movement.obj: ../servo.h
+Movement.obj: ../sound.h
+Movement.obj: ../cliff.h
 
 ../Movement.c:
 
@@ -93,4 +95,8 @@ C:/ti/ccs1031/ccs/tools/compiler/ti-cgt-arm_20.2.4.LTS/include/stdlib.h:
 ../ping_template.h:
 
 ../servo.h:
+
+../sound.h:
+
+../cliff.h:
 
